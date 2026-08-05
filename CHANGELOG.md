@@ -2,6 +2,15 @@
 
 All notable changes to the **FitZone Gym Management System Web Application** are documented in this file.
 
+## [1.1.0] - 2026-08-06
+
+### Added
+- **Render Live Production Deployment**: Deployed live web application on Render at [https://fitzonegymmanagementweb.onrender.com/](https://fitzonegymmanagementweb.onrender.com/).
+- **Realistic Indian Seed Dataset**: Seeded MySQL database (`gymdb`) with 50 members (Maharashtra cities), 2 trainers (Rahul Patil & Priya Sharma), 10 packages, UPI payment history (**PhonePe**, **Google Pay**, **Paytm**, **BHIM**), and 60 days of attendance logs.
+- **Docker Containerization**: Added `Dockerfile` (Eclipse Temurin JDK 21), `.dockerignore`, and standalone `mvnw` Maven Wrapper.
+
+---
+
 ## [1.0.0] - 2026-08-05
 
 ### Added

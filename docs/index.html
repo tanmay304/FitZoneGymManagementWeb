@@ -14,6 +14,7 @@
             --text-primary: #f8fafc;
             --accent-orange: #f97316;
             --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
         }
         body {
             background-color: var(--bg-primary);
@@ -39,6 +40,12 @@
             font-weight: 600;
         }
         .btn-orange:hover { background-color: #ea580c; color: #fff; }
+        .btn-green {
+            background-color: var(--accent-green);
+            color: #fff;
+            font-weight: 600;
+        }
+        .btn-green:hover { background-color: #16a34a; color: #fff; }
     </style>
 </head>
 <body>
@@ -52,6 +59,7 @@
                     <li class="nav-item"><a class="nav-link" href="#architecture">Architecture</a></li>
                     <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
                     <li class="nav-item"><a class="nav-link" href="#installation">Installation</a></li>
+                    <li class="nav-item"><a class="nav-link text-success fw-bold" href="https://fitzonegymmanagementweb.onrender.com/" target="_blank"><i class="bi bi-globe"></i> Live Web App</a></li>
                     <li class="nav-item"><a class="nav-link text-warning" href="https://github.com/tanmay304/FitZoneGymManagementWeb" target="_blank"><i class="bi bi-github"></i> GitHub Repo</a></li>
                 </ul>
             </div>
@@ -61,14 +69,14 @@
     <!-- Hero Header -->
     <header class="hero-section text-center">
         <div class="container">
-            <span class="badge bg-warning text-dark px-3 py-2 fs-6 mb-3"><i class="bi bi-star-fill me-1"></i> Spring Boot 3 Enterprise Web Application</span>
+            <span class="badge bg-success px-3 py-2 fs-6 mb-3"><i class="bi bi-check-circle-fill me-1"></i> Live Production Deployment</span>
             <h1 class="display-4 fw-extrabold mb-3">FitZone Gym Management System</h1>
             <p class="lead text-muted max-w-2xl mx-auto mb-4">
                 Full-stack Enterprise Java Web Application built with <strong>Java 21 LTS</strong>, <strong>Spring Boot 3</strong>, <strong>Spring MVC</strong>, <strong>Thymeleaf</strong>, <strong>MySQL (`gymdb`)</strong>, <strong>Firebase Auth & Storage</strong>, <strong>iText PDF</strong>, and <strong>Apache POI</strong>.
             </p>
             <div class="d-flex justify-content-center gap-3">
+                <a href="https://fitzonegymmanagementweb.onrender.com/" target="_blank" class="btn btn-green btn-lg"><i class="bi bi-rocket-takeoff-fill me-1"></i> Launch Live Application</a>
                 <a href="https://github.com/tanmay304/FitZoneGymManagementWeb" target="_blank" class="btn btn-orange btn-lg"><i class="bi bi-github me-1"></i> GitHub Repository</a>
-                <a href="#installation" class="btn btn-outline-light btn-lg"><i class="bi bi-book me-1"></i> Installation Guide</a>
             </div>
         </div>
     </header>
@@ -115,7 +123,7 @@
             <h2 class="mb-4 text-warning"><i class="bi bi-diagram-3 me-2"></i> Enterprise Architecture</h2>
             <div class="card-custom p-4 text-center">
                 <pre class="text-start bg-dark p-3 rounded text-light border border-secondary" style="font-family: monospace;">
-Browser (Client) ──► Spring Boot 3 Web Application (Port 8080)
+Browser (Client) ──► Live Cloud App (https://fitzonegymmanagementweb.onrender.com/)
                        ├── Spring Security (BCrypt & Firebase Auth)
                        ├── Spring MVC & Thymeleaf Templates
                        └── Service Layer
@@ -135,25 +143,25 @@ Browser (Client) ──► Spring Boot 3 Web Application (Port 8080)
                 <div class="col-md-6">
                     <div class="card-custom">
                         <h5><i class="bi bi-people-fill text-warning me-2"></i> Member Management</h5>
-                        <p class="text-muted small m-0">Full CRUD, real-time search, photo handling, duplicate validation, and printable PDF Member QR Cards.</p>
+                        <p class="text-muted small m-0">50 realistic Indian members (Maharashtra), CRUD, search, photo handling, duplicate validation, and printable PDF Member QR Cards.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card-custom">
                         <h5><i class="bi bi-person-badge-fill text-info me-2"></i> Trainer Directory</h5>
-                        <p class="text-muted small m-0">Fitness instructor management, specialties, joining dates, monthly salary payouts, and status tracking.</p>
+                        <p class="text-muted small m-0">Rahul Patil & Priya Sharma instructor management, specialties, joining dates, monthly salary payouts, and status tracking.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card-custom">
                         <h5><i class="bi bi-credit-card-fill text-success me-2"></i> Payments & Invoicing</h5>
-                        <p class="text-muted small m-0">Cash, Card, and UPI payments with ZXing QR code modals and branded iText PDF invoice generation.</p>
+                        <p class="text-muted small m-0">Cash, Card, and UPI (PhonePe, GPay, Paytm, BHIM) payments with ZXing QR code modals and branded iText PDF invoice generation.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card-custom">
                         <h5><i class="bi bi-clock-history text-purple me-2"></i> Attendance & Check-In</h5>
-                        <p class="text-muted small m-0">Manual check-in, QR/Barcode scanner event listener, and daily attendance log reporting.</p>
+                        <p class="text-muted small m-0">Manual check-in, QR/Barcode scanner event listener, and 60 days of daily attendance log reporting.</p>
                     </div>
                 </div>
             </div>
@@ -163,15 +171,16 @@ Browser (Client) ──► Spring Boot 3 Web Application (Port 8080)
         <section id="installation" class="mb-5">
             <h2 class="mb-4 text-warning"><i class="bi bi-terminal me-2"></i> Quick Start & Installation</h2>
             <div class="card-custom p-4">
-                <h5>1. Import MySQL Database</h5>
-                <pre class="bg-dark p-2 rounded text-success">mysql -u root -p gymdb < sql/gymdb_upgrade.sql</pre>
+                <h5>1. Import MySQL Database & Seed Data</h5>
+                <pre class="bg-dark p-2 rounded text-success">mysql -u root -p gymdb < sql/gymdb_upgrade.sql
+mysql -u root -p gymdb < sql/seed_data.sql</pre>
                 
                 <h5 class="mt-3">2. Build & Package</h5>
                 <pre class="bg-dark p-2 rounded text-success">mvn clean package</pre>
 
                 <h5 class="mt-3">3. Launch Web Server</h5>
                 <pre class="bg-dark p-2 rounded text-success">java -jar target/FitZoneGymManagementWeb-1.0-SNAPSHOT.jar</pre>
-                <p class="text-muted mt-2">Open browser at <strong>http://localhost:8080</strong> (Credentials: <code>admin</code> / <code>admin123</code>)</p>
+                <p class="text-muted mt-2">Open browser at <strong>http://localhost:8080</strong> or live at <strong><a href="https://fitzonegymmanagementweb.onrender.com/" target="_blank" class="text-warning">https://fitzonegymmanagementweb.onrender.com/</a></strong> (Credentials: <code>admin</code> / <code>admin123</code>)</p>
             </div>
         </section>
     </main>
