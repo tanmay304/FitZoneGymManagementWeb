@@ -90,6 +90,18 @@ CREATE TABLE IF NOT EXISTS `tblsettings` (
   PRIMARY KEY (`setting_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 9. Standalone Members Table
+CREATE TABLE IF NOT EXISTS `members` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `full_name` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
+  `mobile` VARCHAR(20) NOT NULL,
+  `city` VARCHAR(50) DEFAULT NULL,
+  `state` VARCHAR(50) DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Insert default system settings
 INSERT IGNORE INTO `tblsettings` (`setting_key`, `setting_value`) VALUES
 ('gym_name', 'FitZone Fitness Club'),

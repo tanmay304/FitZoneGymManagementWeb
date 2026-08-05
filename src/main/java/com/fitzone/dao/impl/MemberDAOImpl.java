@@ -23,7 +23,7 @@ public class MemberDAOImpl implements MemberDAO {
                 list.add(mapResultSetToMember(rs));
             }
         } catch (SQLException e) {
-            logger.error("Failed to fetch all members", e);
+            logger.error("Failed to fetch all members from tbluser", e);
         }
         return list;
     }
@@ -135,31 +135,59 @@ public class MemberDAOImpl implements MemberDAO {
 
     @Override
     public boolean addMember(Member member) {
-        String sql = "INSERT INTO tbluser (fname, lname, email, mobile, password, state, city, address, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, member.getFname());
-            stmt.setString(2, member.getLname());
-            stmt.setString(3, member.getEmail());
-            stmt.setString(4, member.getMobile());
-            stmt.setString(5, member.getPassword());
-            stmt.setString(6, member.getState());
-            stmt.setString(7, member.getCity());
-            stmt.setString(8, member.getAddress());
-            stmt.setString(9, member.getPhotoPath());
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                try (ResultSet keys = stmt.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        member.setId(keys.getInt(1));
-                    }
-                }
-                return true;
+        String sqlTblUser = "INSERT INTO tbluser (fname, lname, email, mobile, password, state, city, address, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlMembers = "INSERT INTO members (full_name, email, mobile, city, state) VALUES (?, ?, ?, ?, ?)";
+
+        boolean success = false;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (conn == null) {
+                logger.error("❌ Database connection is null during addMember!");
+                return false;
             }
+
+            // 1. Insert into tbluser
+            try (PreparedStatement stmt = conn.prepareStatement(sqlTblUser, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setString(1, member.getFname());
+                stmt.setString(2, member.getLname());
+                stmt.setString(3, member.getEmail());
+                stmt.setString(4, member.getMobile());
+                stmt.setString(5, member.getPassword() != null ? member.getPassword() : "21232f297a57a5a743894a0e4a801fc3");
+                stmt.setString(6, member.getState());
+                stmt.setString(7, member.getCity());
+                stmt.setString(8, member.getAddress());
+                stmt.setString(9, member.getPhotoPath());
+
+                int affected = stmt.executeUpdate();
+                if (affected > 0) {
+                    try (ResultSet keys = stmt.getGeneratedKeys()) {
+                        if (keys.next()) {
+                            member.setId(keys.getInt(1));
+                        }
+                    }
+                    success = true;
+                    logger.info("✅ Member inserted into tbluser with ID: {}", member.getId());
+                }
+            }
+
+            // 2. Sync insert into standalone members table
+            try (PreparedStatement stmtMembers = conn.prepareStatement(sqlMembers)) {
+                String fullName = (member.getFname() != null ? member.getFname() : "") + 
+                                 (member.getLname() != null && !member.getLname().isEmpty() ? " " + member.getLname() : "");
+                stmtMembers.setString(1, fullName.trim());
+                stmtMembers.setString(2, member.getEmail());
+                stmtMembers.setString(3, member.getMobile());
+                stmtMembers.setString(4, member.getCity());
+                stmtMembers.setString(5, member.getState());
+                stmtMembers.executeUpdate();
+                logger.info("✅ Member synced into members table: {}", fullName);
+            } catch (SQLException exMembers) {
+                logger.warn("Notice: Sync to members table skipped or table pending: {}", exMembers.getMessage());
+            }
+
         } catch (SQLException e) {
-            logger.error("Failed to add member", e);
+            logger.error("❌ CRITICAL: Failed to add member into database! SQL State: " + e.getSQLState() + ", Error Code: " + e.getErrorCode(), e);
         }
-        return false;
+        return success;
     }
 
     @Override

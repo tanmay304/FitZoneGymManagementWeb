@@ -5,6 +5,8 @@ import com.fitzone.service.MemberService;
 import com.fitzone.service.PdfService;
 import com.fitzone.service.impl.MemberServiceImpl;
 import com.fitzone.util.PasswordUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequestMapping("/members")
 public class WebMemberController {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebMemberController.class);
     private final MemberService memberService = new MemberServiceImpl();
 
     @GetMapping
@@ -38,20 +41,36 @@ public class WebMemberController {
 
     @PostMapping("/add")
     public String addMember(@ModelAttribute Member member, RedirectAttributes redirectAttributes) {
-        if (memberService.isEmailDuplicate(member.getEmail(), 0)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Email already registered!");
+        logger.info(">>> Processing Registration Request for: {} {}, Email: {}, Mobile: {}",
+                member.getFname(), member.getLname(), member.getEmail(), member.getMobile());
+
+        if (member.getFname() == null || member.getFname().trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "First Name is required.");
             return "redirect:/members";
         }
-        if (memberService.isMobileDuplicate(member.getMobile(), 0)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Mobile number already registered!");
+        if (member.getEmail() == null || member.getEmail().trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Email address is required.");
+            return "redirect:/members";
+        }
+        if (memberService.isEmailDuplicate(member.getEmail().trim(), 0)) {
+            logger.warn("Registration rejected: Email duplicate ({})", member.getEmail());
+            redirectAttributes.addFlashAttribute("errorMessage", "Registration Failed: Email address '" + member.getEmail() + "' is already registered!");
+            return "redirect:/members";
+        }
+        if (member.getMobile() != null && !member.getMobile().trim().isEmpty() && memberService.isMobileDuplicate(member.getMobile().trim(), 0)) {
+            logger.warn("Registration rejected: Mobile duplicate ({})", member.getMobile());
+            redirectAttributes.addFlashAttribute("errorMessage", "Registration Failed: Mobile number '" + member.getMobile() + "' is already registered!");
             return "redirect:/members";
         }
 
         member.setPassword(PasswordUtil.hashPasswordMD5("123456"));
-        if (memberService.addMember(member)) {
-            redirectAttributes.addFlashAttribute("successMessage", "Member registered successfully!");
+        boolean success = memberService.addMember(member);
+        if (success) {
+            logger.info("✅ Member registered successfully! ID: {}", member.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Member registered successfully! Welcome " + member.getFname() + " " + (member.getLname() != null ? member.getLname() : ""));
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to register member.");
+            logger.error("❌ Database insertion failed during addMember for {}", member.getEmail());
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to save member in database. Please check MySQL logs.");
         }
         return "redirect:/members";
     }
@@ -59,18 +78,18 @@ public class WebMemberController {
     @PostMapping("/edit")
     public String editMember(@ModelAttribute Member member, RedirectAttributes redirectAttributes) {
         if (memberService.isEmailDuplicate(member.getEmail(), member.getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Email already in use!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Email already in use by another member!");
             return "redirect:/members";
         }
         if (memberService.isMobileDuplicate(member.getMobile(), member.getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Mobile number already in use!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Mobile number already in use by another member!");
             return "redirect:/members";
         }
 
         if (memberService.updateMember(member)) {
-            redirectAttributes.addFlashAttribute("successMessage", "Member updated successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Member details updated successfully!");
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update member.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update member in database.");
         }
         return "redirect:/members";
     }
@@ -101,7 +120,7 @@ public class WebMemberController {
                         .body(bytes);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to generate member card PDF for ID " + id, e);
         }
         return ResponseEntity.internalServerError().build();
     }
