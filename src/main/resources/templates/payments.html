@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Payments & Invoicing - FitZone Gym</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link th:href="@{/css/material_theme.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="/dashboard" class="sidebar-brand"><i class="bi bi-lightning-charge-fill"></i> FITZONE</a>
+        <nav class="nav flex-column flex-grow-1">
+            <a href="/dashboard" class="nav-link"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a href="/members" class="nav-link"><i class="bi bi-people-fill"></i> Members</a>
+            <a href="/trainers" class="nav-link"><i class="bi bi-person-badge-fill"></i> Trainers</a>
+            <a href="/packages" class="nav-link"><i class="bi bi-box-seam-fill"></i> Packages</a>
+            <a href="/bookings" class="nav-link"><i class="bi bi-calendar-check-fill"></i> Bookings</a>
+            <a href="/payments" class="nav-link active"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="/attendance" class="nav-link"><i class="bi bi-clock-history"></i> Attendance</a>
+            <a href="/reports" class="nav-link"><i class="bi bi-file-earmark-bar-graph-fill"></i> Reports</a>
+            <a href="/settings" class="nav-link"><i class="bi bi-gear-fill"></i> Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="m-0">Payment Transactions</h2>
+                <p class="text-muted m-0">Record payments, process UPI/Card transactions, and download PDF receipts</p>
+            </div>
+            <button class="btn btn-fitzone" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                <i class="bi bi-wallet2 me-1"></i> Record New Payment
+            </button>
+        </div>
+
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Receipt #</th>
+                            <th>Transaction ID</th>
+                            <th>Member</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${payments}">
+                            <td class="fw-bold text-warning" th:text="${p.receiptNo}">REC-1001</td>
+                            <td th:text="${p.transactionId}">TXN-12345</td>
+                            <td th:text="${p.memberName}">Member Name</td>
+                            <td th:text="'₹' + ${p.payment}">₹1,200</td>
+                            <td th:text="${p.paymentMethod}">UPI</td>
+                            <td><span class="badge bg-success" th:text="${p.status}">Paid</span></td>
+                            <td class="text-end">
+                                <a th:href="@{/payments/receipt/{id}(id=${p.id})}" class="btn btn-sm btn-outline-info" title="Download iText PDF Receipt">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i> PDF Receipt
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(payments)}">
+                            <td colspan="7" class="text-center text-muted py-4">No payments recorded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Payment Modal -->
+    <div class="modal fade" id="addPaymentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title"><i class="bi bi-credit-card me-2 text-warning"></i> Record Payment</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/payments/add" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Booking Reference</label>
+                            <select name="bookingID" class="form-select bg-secondary text-light border-0" required>
+                                <option th:each="b : ${bookings}" th:value="${b.id}" th:text="'Booking #' + ${b.id} + ' - ' + ${b.memberName}"></option>
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Payment Method</label>
+                                <select name="paymentMethod" class="form-select bg-secondary text-light border-0">
+                                    <option value="UPI">UPI / GPay / PhonePe</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Credit/Debit Card</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Payment Type</label>
+                                <select name="paymentType" class="form-select bg-secondary text-light border-0">
+                                    <option value="Full Payment">Full Payment</option>
+                                    <option value="Partial Payment">Partial Payment</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Amount (₹)</label>
+                                <input type="number" step="0.01" name="payment" class="form-control bg-secondary text-light border-0" value="600" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-fitzone">Confirm Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

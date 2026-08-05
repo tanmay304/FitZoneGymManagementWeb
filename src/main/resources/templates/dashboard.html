@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - FitZone Gym Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link th:href="@{/css/material_theme.css}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" th:src="@{/js/firebase-config.js}"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="/dashboard" class="sidebar-brand">
+            <i class="bi bi-lightning-charge-fill"></i> FITZONE
+        </a>
+        <nav class="nav flex-column flex-grow-1">
+            <a href="/dashboard" class="nav-link active"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a href="/members" class="nav-link"><i class="bi bi-people-fill"></i> Members</a>
+            <a href="/trainers" class="nav-link"><i class="bi bi-person-badge-fill"></i> Trainers</a>
+            <a href="/packages" class="nav-link"><i class="bi bi-box-seam-fill"></i> Packages</a>
+            <a href="/bookings" class="nav-link"><i class="bi bi-calendar-check-fill"></i> Bookings</a>
+            <a href="/payments" class="nav-link"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="/attendance" class="nav-link"><i class="bi bi-clock-history"></i> Attendance</a>
+            <a href="/reports" class="nav-link"><i class="bi bi-file-earmark-bar-graph-fill"></i> Reports</a>
+            <a href="/settings" class="nav-link"><i class="bi bi-gear-fill"></i> Settings</a>
+        </nav>
+        <div class="pt-3 border-top border-secondary">
+            <button id="themeToggleBtn" class="btn btn-outline-secondary w-100 btn-sm mb-2">
+                <i class="bi bi-moon-stars"></i> Dark/Light Mode
+            </button>
+            <a href="/logout" class="btn btn-outline-danger w-100 btn-sm">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="m-0">Executive Dashboard <span class="badge bg-warning text-dark fs-6 ms-2"><i class="bi bi-fire"></i> Firebase Connected</span></h2>
+                <p class="text-muted m-0">FitZone Enterprise Analytics & Firebase Cloud Sync</p>
+            </div>
+            <a href="/members" class="btn btn-fitzone"><i class="bi bi-person-plus-fill me-1"></i> Quick Add Member</a>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="glass-card kpi-card m-0">
+                    <div>
+                        <p class="text-muted mb-1 small uppercase">Total Members</p>
+                        <h3 class="m-0" th:text="${totalMembers}">0</h3>
+                    </div>
+                    <div class="kpi-icon bg-orange"><i class="bi bi-people"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card kpi-card m-0">
+                    <div>
+                        <p class="text-muted mb-1 small uppercase">Active Subscriptions</p>
+                        <h3 class="m-0" th:text="${activeMembers}">0</h3>
+                    </div>
+                    <div class="kpi-icon bg-blue"><i class="bi bi-check-circle"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card kpi-card m-0">
+                    <div>
+                        <p class="text-muted mb-1 small uppercase">Today's Revenue</p>
+                        <h3 class="m-0" th:text="'₹' + ${todayRevenue}">₹0</h3>
+                    </div>
+                    <div class="kpi-icon bg-green"><i class="bi bi-currency-rupee"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card kpi-card m-0">
+                    <div>
+                        <p class="text-muted mb-1 small uppercase">Total Revenue</p>
+                        <h3 class="m-0" th:text="'₹' + ${totalRevenue}">₹0</h3>
+                    </div>
+                    <div class="kpi-icon bg-purple"><i class="bi bi-wallet2"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="glass-card mb-4">
+            <h5 class="mb-3"><i class="bi bi-graph-up-arrow me-2 text-warning"></i> Monthly Revenue Trend</h5>
+            <canvas id="revenueChart" height="90"></canvas>
+        </div>
+
+        <!-- Recent Payments Table -->
+        <div class="glass-card">
+            <h5 class="mb-3"><i class="bi bi-clock-history me-2 text-info"></i> Recent Payments Log</h5>
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Receipt #</th>
+                            <th>Member</th>
+                            <th>Package</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${recentPayments}">
+                            <td th:text="${p.receiptNo}">REC-1001</td>
+                            <td th:text="${p.memberName}">Member</td>
+                            <td th:text="${p.packageName}">Package</td>
+                            <td th:text="'₹' + ${p.payment}">₹600</td>
+                            <td th:text="${p.paymentMethod}">UPI</td>
+                            <td><span class="badge bg-success" th:text="${p.status}">Paid</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentPayments)}">
+                            <td colspan="6" class="text-center text-muted py-3">No payments recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app_web.js}"></script>
+</body>
+</html>

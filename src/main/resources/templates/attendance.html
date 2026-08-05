@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Log - FitZone Gym</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link th:href="@{/css/material_theme.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="/dashboard" class="sidebar-brand"><i class="bi bi-lightning-charge-fill"></i> FITZONE</a>
+        <nav class="nav flex-column flex-grow-1">
+            <a href="/dashboard" class="nav-link"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            <a href="/members" class="nav-link"><i class="bi bi-people-fill"></i> Members</a>
+            <a href="/trainers" class="nav-link"><i class="bi bi-person-badge-fill"></i> Trainers</a>
+            <a href="/packages" class="nav-link"><i class="bi bi-box-seam-fill"></i> Packages</a>
+            <a href="/bookings" class="nav-link"><i class="bi bi-calendar-check-fill"></i> Bookings</a>
+            <a href="/payments" class="nav-link"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="/attendance" class="nav-link active"><i class="bi bi-clock-history"></i> Attendance</a>
+            <a href="/reports" class="nav-link"><i class="bi bi-file-earmark-bar-graph-fill"></i> Reports</a>
+            <a href="/settings" class="nav-link"><i class="bi bi-gear-fill"></i> Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="m-0">Member Check-In & Attendance</h2>
+                <p class="text-muted m-0">Manual, QR Code, Barcode, & RFID-ready check-in runner</p>
+            </div>
+        </div>
+
+        <!-- Check-In Form Card -->
+        <div class="glass-card mb-4">
+            <h5 class="mb-3"><i class="bi bi-qr-code-scan me-2 text-warning"></i> Quick Check-In Member</h5>
+            <form action="/attendance/checkin" method="post" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Member ID</label>
+                    <input type="number" name="userId" class="form-control bg-dark text-light border-secondary" placeholder="Enter Member ID (e.g. 1)" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Verification Method</label>
+                    <select name="method" class="form-select bg-dark text-light border-secondary">
+                        <option value="Manual">Manual Entry</option>
+                        <option value="QR Code">QR Code Scan</option>
+                        <option value="Barcode">Barcode Scanner</option>
+                        <option value="RFID">RFID Scanner</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-fitzone w-100 py-2"><i class="bi bi-box-arrow-in-right me-1"></i> Check In</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Daily Attendance Log -->
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="m-0"><i class="bi bi-calendar-event me-2 text-info"></i> Daily Attendance Log</h5>
+                <form action="/attendance" method="get" class="d-flex gap-2">
+                    <input type="date" name="date" class="form-control bg-dark text-light border-secondary btn-sm" th:value="${selectedDate}">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Filter</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Member ID</th>
+                            <th>Member Name</th>
+                            <th>Check-In Time</th>
+                            <th>Check-Out Time</th>
+                            <th>Method</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${attendanceLog}">
+                            <td th:text="${a.id}">1</td>
+                            <td th:text="${a.userId}">101</td>
+                            <td class="fw-bold" th:text="${a.memberName}">Member Name</td>
+                            <td th:text="${a.checkIn}">09:00:00</td>
+                            <td th:text="${a.checkOut != null ? a.checkOut : 'In Progress'}">In Progress</td>
+                            <td><span class="badge bg-secondary" th:text="${a.method}">Manual</span></td>
+                            <td class="text-end">
+                                <a th:if="${a.checkOut == null}" th:href="@{/attendance/checkout/{id}(id=${a.id})}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-box-arrow-right"></i> Check Out
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(attendanceLog)}">
+                            <td colspan="7" class="text-center text-muted py-4">No attendance records for selected date.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
