@@ -23,7 +23,7 @@ public class MemberDAOImpl implements MemberDAO {
                 list.add(mapResultSetToMember(rs));
             }
         } catch (SQLException e) {
-            logger.error("Failed to fetch all members from tbluser", e);
+            logger.error("Failed to fetch members. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return list;
     }
@@ -45,7 +45,7 @@ public class MemberDAOImpl implements MemberDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Failed to search members", e);
+            logger.error("Failed to search members. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return list;
     }
@@ -62,7 +62,7 @@ public class MemberDAOImpl implements MemberDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Failed to get member by id: " + id, e);
+            logger.error("Failed to get member by id {}. SQLState={}, ErrorCode={}, Message={}", id, e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return null;
     }
@@ -79,7 +79,7 @@ public class MemberDAOImpl implements MemberDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Failed to get member by email: " + email, e);
+            logger.error("Failed to get member by email {}. SQLState={}, ErrorCode={}, Message={}", email, e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return null;
     }
@@ -96,7 +96,7 @@ public class MemberDAOImpl implements MemberDAO {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Failed to get member by mobile: " + mobile, e);
+            logger.error("Failed to get member by mobile {}. SQLState={}, ErrorCode={}, Message={}", mobile, e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return null;
     }
@@ -112,7 +112,7 @@ public class MemberDAOImpl implements MemberDAO {
                 if (rs.next()) return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            logger.error("Error checking email duplicate", e);
+            logger.error("Error checking email duplicate. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return false;
     }
@@ -128,7 +128,7 @@ public class MemberDAOImpl implements MemberDAO {
                 if (rs.next()) return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            logger.error("Error checking mobile duplicate", e);
+            logger.error("Error checking mobile duplicate. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return false;
     }
@@ -141,7 +141,7 @@ public class MemberDAOImpl implements MemberDAO {
         boolean success = false;
         try (Connection conn = DatabaseConnection.getConnection()) {
             if (conn == null) {
-                logger.error("❌ Database connection is null during addMember!");
+                logger.error("Member registration failed. Connection is null.");
                 return false;
             }
 
@@ -181,11 +181,13 @@ public class MemberDAOImpl implements MemberDAO {
                 stmtMembers.executeUpdate();
                 logger.info("✅ Member synced into members table: {}", fullName);
             } catch (SQLException exMembers) {
-                logger.warn("Notice: Sync to members table skipped or table pending: {}", exMembers.getMessage());
+                logger.warn("Notice: Sync to members table skipped or table pending: SQLState={}, ErrorCode={}, Message={}",
+                        exMembers.getSQLState(), exMembers.getErrorCode(), exMembers.getMessage());
             }
 
         } catch (SQLException e) {
-            logger.error("❌ CRITICAL: Failed to add member into database! SQL State: " + e.getSQLState() + ", Error Code: " + e.getErrorCode(), e);
+            logger.error("Member registration failed. SQLState={}, ErrorCode={}, Message={}",
+                    e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return success;
     }
@@ -206,7 +208,7 @@ public class MemberDAOImpl implements MemberDAO {
             stmt.setInt(9, member.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            logger.error("Failed to update member", e);
+            logger.error("Failed to update member. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
             return false;
         }
     }
@@ -219,7 +221,7 @@ public class MemberDAOImpl implements MemberDAO {
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            logger.error("Failed to delete member", e);
+            logger.error("Failed to delete member. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
             return false;
         }
     }
@@ -232,7 +234,7 @@ public class MemberDAOImpl implements MemberDAO {
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
-            logger.error("Failed to get total members count", e);
+            logger.error("Failed to get total members count. SQLState={}, ErrorCode={}, Message={}", e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
         }
         return 0;
     }
