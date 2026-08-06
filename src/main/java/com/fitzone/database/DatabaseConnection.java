@@ -48,36 +48,43 @@ public class DatabaseConnection {
         }
     }
 
-    public static Connection getConnection() throws SQLException {
-        try {
-            return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-        } catch (SQLException e1) {
-            logger.warn("Primary DB connection attempt ({}) failed: SQLState={}, ErrorCode={}, Message={}",
-                    sanitizeUrl(dbUrl), e1.getSQLState(), e1.getErrorCode(), e1.getMessage());
+   public static Connection getConnection() throws SQLException {
 
-            // Attempt local fallbacks (3307 <-> 3306)
-            if (dbUrl.contains("3307")) {
-                logger.info("Attempting local fallback connection on port 3306...");
-                try {
-                    return DriverManager.getConnection(DEFAULT_LOCAL_3306, dbUser, dbPassword);
-                } catch (SQLException e2) {
-                    try {
-                        return DriverManager.getConnection(DEFAULT_LOCAL_3306, "root", "");
-                    } catch (SQLException ignored) {}
-                }
-            } else if (dbUrl.contains("3306")) {
-                logger.info("Attempting local fallback connection on port 3307...");
-                try {
-                    return DriverManager.getConnection(DEFAULT_LOCAL_3307, "root", "");
-                } catch (SQLException ignored) {}
+    logger.info("Connecting to URL: {}, User: {}", sanitizeUrl(dbUrl), dbUser);
+
+    try {
+        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+
+    } catch (SQLException e) {
+
+        logger.error("Database connection failed. URL={}, User={}, SQLState={}, ErrorCode={}, Message={}",
+                sanitizeUrl(dbUrl),
+                dbUser,
+                e.getSQLState(),
+                e.getErrorCode(),
+                e.getMessage(),
+                e);
+
+        // Local development fallback only
+        if (dbUrl.startsWith("jdbc:mysql://127.0.0.1")
+        || dbUrl.startsWith("jdbc:mysql://localhost")) {
+
+            logger.info("Running locally. Trying localhost fallback...");
+
+            try {
+                return DriverManager.getConnection(DEFAULT_LOCAL_3307, "root", "");
+            } catch (SQLException ignored) {
             }
 
-            logger.error("❌ Database Connection Failed! Target: {}, User: {}, SQLState: {}, ErrorCode: {}, Exception: {}",
-                    sanitizeUrl(dbUrl), dbUser, e1.getSQLState(), e1.getErrorCode(), e1.getMessage(), e1);
-            throw e1;
+            try {
+                return DriverManager.getConnection(DEFAULT_LOCAL_3306, "root", "");
+            } catch (SQLException ignored) {
+            }
         }
-    }
 
+        throw e;
+    }
+}
     public static boolean testConnection() {
         try (Connection conn = getConnection()) {
             return conn != null && !conn.isClosed();
